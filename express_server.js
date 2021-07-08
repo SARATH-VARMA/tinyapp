@@ -113,3 +113,7 @@ app.post("/register", (req, res) => {
     res.send("Email and password fields are required " + res.statusCode);
   }       
 });
+app.get("/login", (req, res) => {
+  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null };
+  res.render('login', templateVars);         
+});
