@@ -9,6 +9,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser())
 
+const { checkEmailExists } = require('./helper')
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -91,13 +93,23 @@ app.get("/register", (req, res) => {
 });
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
-  const id = generateRandomString();
-  const user = {
-    id,
-    email,
-    password
-  }
-  users[id] = user;
-  res.cookie('user_id', id);
-  res.redirect('/urls');         
+  if(email && password) {
+    if(checkEmailExists(users, email)) {
+      res.statusCode = 400;
+      res.send("Email already registered " + res.statusCode);
+    } else {
+      const id = generateRandomString();
+      const user = {
+        id,
+        email,
+        password
+      }
+      users[id] = user;
+      res.cookie('user_id', id);
+      res.redirect('/urls');  
+    } 
+  } else {
+    res.statusCode = 400;
+    res.send("Email and password fields are required " + res.statusCode);
+  }       
 });
