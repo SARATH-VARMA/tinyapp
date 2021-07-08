@@ -14,6 +14,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
 }
@@ -32,15 +45,15 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null, urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null };
   res.render("urls_new", templateVars);
 });
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL, longURL:  urlDatabase[req.params.shortURL] };
+  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null, shortURL: req.params.shortURL, longURL:  urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
@@ -73,6 +86,18 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');         
 });
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null };
   res.render('registration', templateVars);         
+});
+app.post("/register", (req, res) => {
+  const {email, password} = req.body;
+  const id = generateRandomString();
+  const user = {
+    id,
+    email,
+    password
+  }
+  users[id] = user;
+  res.cookie('user_id', id);
+  res.redirect('/urls');         
 });
