@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+
+// Setting ejs as the template engine
 app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
@@ -57,14 +59,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+//List of URLs corresponding to each user
 app.get("/urls", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
@@ -79,6 +74,7 @@ app.get("/urls", (req, res) => {
 
 });
 
+// Route for new URL form
 app.get("/urls/new", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
@@ -90,6 +86,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// The short URL for the given ID
 app.get("/urls/:shortURL", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
@@ -109,6 +106,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+//Save the short URL to database
 app.post("/urls", (req, res) => {
   const user = req.session.user_id;
   if (user) {
@@ -120,7 +118,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
-//redirects to the corresponding long URL
+//Redirects to the corresponding long URL
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -130,6 +128,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
+//If user is logged in and owns the URL for the given ID, delete the URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
@@ -144,6 +143,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }  
 });
 
+//If user is logged in and owns the URL for the given ID, update the URL
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;  
   const newUser = req.session.user_id;
@@ -159,6 +159,7 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
+//Login if email and password params match with an existing user
 app.post("/login", (req, res) => {
   const {email, password} = req.body;
   const user = getUserByEmail(email, users);
@@ -176,11 +177,13 @@ app.post("/login", (req, res) => {
          
 });
 
+//Logout 
 app.post("/logout", (req, res) => {
   req.session['user_id'] = null;
   res.redirect('/urls');         
 });
 
+// Route for registration form
 app.get("/register", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
@@ -190,6 +193,7 @@ app.get("/register", (req, res) => {
   }         
 });
 
+// Register a new user
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
   if(email && password) {
@@ -212,6 +216,7 @@ app.post("/register", (req, res) => {
   }       
 });
 
+//Route for login form
 app.get("/login", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
