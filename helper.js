@@ -7,4 +7,14 @@ const checkEmailExists = function(users, email) {
   return false;
 }
 
-module.exports = { checkEmailExists }
+const urlsForUser = function(id,db){
+  let result = {};
+  for (let element in db) {
+    if (db[element].userID === id) {
+      result[element] = db[element];
+    }
+  }
+  return result;
+}
+
+module.exports = { checkEmailExists, urlsForUser }
