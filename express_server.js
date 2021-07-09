@@ -9,6 +9,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser())
 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const { checkEmailExists, urlsForUser } = require('./helper')
 
 const urlDatabase = {
@@ -20,12 +23,12 @@ const users = {
   "8rvcfl": {
     id: "8rvcfl", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", saltRounds)
   },
  "5xn69m": {
     id: "5xn69m", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("aaa bbb ccc ddd", saltRounds)
   }
 }
 
@@ -149,7 +152,7 @@ app.post("/login", (req, res) => {
   const {email, password} = req.body;
   const user = checkEmailExists(users, email);
   if(user) {
-    if (user.password === password) {
+    if (bcrypt.compareSync(password, user.password )) {
       res.cookie('user_id', user.id);
       res.redirect('/urls'); 
     } else {
@@ -183,10 +186,11 @@ app.post("/register", (req, res) => {
       res.status(400).send("Email already registered");
     } else {
       const id = generateRandomString();
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
       const user = {
         id,
         email,
-        password
+        password : hashedPassword
       }
       users[id] = user;
       res.cookie('user_id', id);
