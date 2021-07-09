@@ -20,25 +20,25 @@ app.use(
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const { checkEmailExists, urlsForUser } = require('./helper')
+const { getUserByEmail, urlsForUser } = require('./helper')
 
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "8rvcfl"},
   "9sm5xK": {longURL: "http://www.google.com", userID: "5xn69m"}
 };
 
-const users = { 
+const users = {
   "8rvcfl": {
-    id: "8rvcfl", 
-    email: "user@example.com", 
+    id: "8rvcfl",
+    email: "user@example.com",
     password: bcrypt.hashSync("purple-monkey-dinosaur", saltRounds)
   },
- "5xn69m": {
-    id: "5xn69m", 
-    email: "user2@example.com", 
+  "5xn69m": {
+    id: "5xn69m",
+    email: "user2@example.com",
     password: bcrypt.hashSync("aaa bbb ccc ddd", saltRounds)
   }
-}
+};
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
@@ -86,7 +86,7 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
 
   } else {
-    res.redirect('/login')
+    res.redirect('/login');
   }
 });
 
@@ -94,7 +94,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const newUser = req.session.user_id;
   if (newUser) {
     const tinyURL = req.params.shortURL;
-    if(urlDatabase[tinyURL]){
+    if (urlDatabase[tinyURL]) {
       if (urlDatabase[tinyURL].userID === newUser) {
         const templateVars = { user: users[newUser], shortURL: tinyURL, longURL: urlDatabase[tinyURL].longURL};
         res.render("urls_show", templateVars);
@@ -161,10 +161,10 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/login", (req, res) => {
   const {email, password} = req.body;
-  const user = checkEmailExists(users, email);
+  const user = getUserByEmail(email, users);
   if(user) {
-    if (bcrypt.compareSync(password, user.password )) {
-      req.session.user_id = user.id;
+    if (bcrypt.compareSync(password, users[user].password )) {
+      req.session.user_id = users[user].id;
       res.redirect('/urls'); 
     } else {
       res.status(403).send("Password is incorrect");
@@ -193,7 +193,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
   if(email && password) {
-    if(checkEmailExists(users, email)) {
+    if (getUserByEmail(email, users)) {
       res.status(400).send("Email already registered");
     } else {
       const id = generateRandomString();
