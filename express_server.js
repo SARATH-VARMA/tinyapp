@@ -61,7 +61,8 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
 
   } else {
-    res.send("Log in or register to continue");
+    const templateVars = { user: null, error: "Create account or Sign in to continue" };
+    res.render("error", templateVars);
   }
 
 });
@@ -80,11 +81,15 @@ app.get("/urls/:shortURL", (req, res) => {
   const newUser = req.cookies["user_id"];
   if (newUser) {
     const tinyURL = req.params.shortURL;
-    if (urlDatabase[tinyURL].userID === newUser) {
-      const templateVars = { user: users[newUser], shortURL: tinyURL, longURL: urlDatabase[tinyURL].longURL};
-      res.render("urls_show", templateVars);
+    if(urlDatabase[tinyURL]){
+      if (urlDatabase[tinyURL].userID === newUser) {
+        const templateVars = { user: users[newUser], shortURL: tinyURL, longURL: urlDatabase[tinyURL].longURL};
+        res.render("urls_show", templateVars);
+      } else {
+        res.send("Access not allowed");
+      }
     } else {
-      res.send("Access not allowed");
+      res.send("Invalid Id");
     }
   } else {
     res.send("Create account or Sign in to continue");
@@ -93,7 +98,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
-    let shortURL = generateRandomString(req.body.longURL)
+    let shortURL = generateRandomString()
     urlDatabase[shortURL] = {"longURL" : req.body.longURL, "userID" : req.cookies["user_id"]};
     res.redirect(`/urls/${shortURL}`);
   } else {
@@ -163,8 +168,12 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null };
-  res.render('registration', templateVars);         
+  const newUser = req.cookies["user_id"];
+  if (newUser) {
+    res.redirect('/urls');
+  } else {
+    res.render('registration', {user: null});
+  }         
 });
 
 app.post("/register", (req, res) => {
@@ -189,6 +198,10 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: req.cookies["user_id"] ? users[req.cookies["user_id"]] : null };
-  res.render('login', templateVars);         
+  const newUser = req.cookies["user_id"];
+  if (newUser) {
+    res.redirect('/urls');
+  } else {
+    res.render('login', {user: null});
+  }
 });
