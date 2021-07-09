@@ -79,12 +79,23 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');  
 });
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');         
+  const {email, password} = req.body;
+  const user = checkEmailExists(users, email);
+  if(user) {
+    if (user.password === password) {
+      res.cookie('user_id', user.id);
+      res.redirect('/urls'); 
+    } else {
+      res.status(403).send("Password is incorrect");
+    }
+
+  } else {
+    res.status(403).send("Couldn't find your account");
+  }
+         
 });
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');         
 });
 app.get("/register", (req, res) => {
@@ -95,8 +106,7 @@ app.post("/register", (req, res) => {
   const {email, password} = req.body;
   if(email && password) {
     if(checkEmailExists(users, email)) {
-      res.statusCode = 400;
-      res.send("Email already registered " + res.statusCode);
+      res.status(400).send("Email already registered");
     } else {
       const id = generateRandomString();
       const user = {
@@ -109,8 +119,7 @@ app.post("/register", (req, res) => {
       res.redirect('/urls');  
     } 
   } else {
-    res.statusCode = 400;
-    res.send("Email and password fields are required " + res.statusCode);
+    res.status(400).send("Email and password fields are required");
   }       
 });
 app.get("/login", (req, res) => {

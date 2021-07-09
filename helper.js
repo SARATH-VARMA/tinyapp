@@ -1,7 +1,7 @@
 const checkEmailExists = function(users, email) {
   for (user in users) {
     if (users[user].email === email) {
-      return true;
+      return users[user];
     } 
   }
   return false;
